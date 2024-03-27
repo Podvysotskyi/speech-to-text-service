@@ -1,0 +1,62 @@
+version: '3'
+services:
+    php:
+        build: ./docker/php
+        image: speech-to-text-php
+        volumes:
+            - ./:/app
+        entrypoint: [ 'composer', 'install' ]
+    node:
+        build: ./docker/node
+        image: speech-to-text-node
+        volumes:
+            - ./:/app
+        entrypoint: ['npm', 'install']
+    vite:
+        depends_on:
+            - node
+        image: speech-to-text-node
+        volumes:
+            - ./:/app
+        restart: on-failure
+        entrypoint: [ 'npm', 'run', 'build' ]
+    api:
+        image: speech-to-text-php
+        depends_on:
+            - php
+            - vite
+            - redis
+            - pgsql
+        restart: on-failure
+        volumes:
+            - ./:/app
+        ports:
+            - '8000:8000'
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+            retries: 6
+            timeout: 5s
+        entrypoint: ['php', 'artisan', 'serve', '--host=0.0.0.0', '--port=8000']
+    redis:
+        image: redis:7.2-alpine
+        restart: on-failure
+        volumes:
+            - 'redis-data:/data'
+        command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
+    pgsql:
+        image: postgres:16-alpine
+        restart: on-failure
+        environment:
+            PGPASSWORD: 'secret'
+            POSTGRES_DB: '${DB_DATABASE}'
+            POSTGRES_USER: '${DB_USERNAME}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD}'
+        volumes:
+            - 'pgsql-data:/var/lib/postgresql/data'
+        healthcheck:
+            test: [ "CMD", "pg_isready", "-q", "-d", "${DB_DATABASE}", "-U", "${DB_USERNAME}" ]
+            retries: 6
+            timeout: 5s
+volumes:
+    pgsql-data:
+    redis-data:
