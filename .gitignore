@@ -1,4 +1,5 @@
 /.phpunit.cache
+/public/hot
 /public/vendor
 /public/docs
 /public/storage
