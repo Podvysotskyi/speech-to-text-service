@@ -1,0 +1,13 @@
+/.phpunit.cache
+/public/vendor
+/public/docs
+/public/storage
+/public/build
+/storage/*.key
+/storage/app/scribe
+/vendor
+/node_modules
+.env
+/.idea
+/.scribe
+/bootstrap/cache

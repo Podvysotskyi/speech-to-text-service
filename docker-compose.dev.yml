@@ -1,0 +1,14 @@
+version: '3'
+services:
+    vite:
+        ports:
+            - '5173:5173'
+        entrypoint: ['npm', 'run', 'dev']
+    pgsql:
+      build: ./docker/pgsql
+      image: speech-to-text-pgsql
+      ports:
+        - '5432:5432'
+    redis:
+      ports:
+        - "6379:6379"
